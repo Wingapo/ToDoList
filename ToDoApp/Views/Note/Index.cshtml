@@ -1,0 +1,114 @@
+﻿@using ToDoApp.Data.Enums
+@{
+    ViewData["Title"] = "Todo List";
+}
+@section Styles {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.14.0-beta2/css/bootstrap-select.min.css">
+}
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.14.0-beta2/js/bootstrap-select.min.js"></script>
+}
+
+<div class="my-5 d-flex gap-2">
+    <div class="card flex-grow-1 p-2">
+        <h2>Add new Task</h2>
+        <form asp-action="Create" method="post">
+            <div class="mb-1">
+                <label for="title">Title</label>
+                <input type="text" class="form-control" placeholder="Title" name="title" id="title">
+            </div>
+            <div class="mb-1">
+                <label for="categories">Categories</label>
+                <select class="bg-light selectpicker w-100" multiple data-live-search="true" data-selected-text-format="count > 5" name="categories" id="categories">
+                    @foreach (var category in ViewBag.Categories)
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="mb-1">
+                <label for="description">Deadline: </label>
+                <input type="datetime-local" class="form-control" placeholder="Deadline" name="deadline" id="deadline">
+            </div>
+            <div class="mb-1">
+                <label for="description">Description: </label>
+                <textarea class="form-control" placeholder="Description" name="description" id="description"></textarea>
+            </div>
+            <div class="mb-1">
+                <input class="btn btn-success" type="submit" value="Add Task">
+            </div>
+        </form>
+    </div>
+    <div class="flex-grow-1 d-flex flex-column gap-2">
+        <div class="card p-2">
+            <h2>Add new Category</h2>
+            <form asp-action="Create" asp-controller="Category" method="post">
+                <div class="mb-1">
+                    <label for="name">Name</label>
+                    <input type="text" class="form-control" placeholder="Name" name="name" id="name">
+                </div>
+                <div class="mb-1">
+                    <input class="btn btn-success" type="submit" value="Add Category">
+                </div>
+            </form>
+        </div>
+        <div class="card">
+            <button class="btn btn-white border dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Available Categories
+            </button>
+            <ul class="dropdown-menu w-100">
+                @foreach (var category in ViewBag.Categories)
+                {
+                    <li class="p-1 px-2">
+                        @category.Name
+                        <a href=@Url.Action("Delete", "Category", new {id = category.Id})
+                           class="float-end bg-danger text-decoration-none text-white px-2 rounded">&#10005;</a>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="d-flex flex-wrap gap-1">
+    @foreach (var note in ViewBag.Notes)
+    {
+        <div class="card w-100">
+            <div class="card-body ">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title d-inline-block me-2">@note.Title</h5>
+                        @{
+                            string color = "bg-light";
+                            switch (note.Status)
+                            {
+                                case NoteStatus.Active:
+                                    color = "bg-warning";
+                                    break;
+                                case NoteStatus.Completed:
+                                    color = "bg-success";
+                                    break;
+                            }
+                            <span class="badge @color">@note.Status</span>
+                        }
+                    </div>
+                    @if (note.Status != NoteStatus.Completed)
+                    {
+                        <a href=@Url.Action("Complete", "Note", new {id = note.Id}) class="btn btn-success" style="font-size: 0.75rem">&#10003;</a>
+                    }
+                </div>
+                <div class="d-flex flex-wrap">
+                    @foreach (var noteCategory in note.Note_Category)
+                    {
+                        <a class="bg-light rounded-pill py-1 px-2 m-1 border text-decoration-none text-muted">@noteCategory.Category.Name</a>
+                    }
+                </div>
+                <p class="card-text">@note.Description</p>
+                @if (note.Deadline != null)
+                {
+                    <p class="float-start text-muted">Deadline: @note.Deadline.ToString("MM/dd/yy H:mm tt")</p>
+                }
+                <a href=@Url.Action("Delete", "Note", new {id = note.Id}) class="btn btn-danger float-end">Delete</a>
+            </div>
+        </div>
+    }
+</div>
