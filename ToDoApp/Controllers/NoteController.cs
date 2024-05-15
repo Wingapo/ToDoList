@@ -24,12 +24,15 @@ namespace ToDoApp.Controllers
         public async Task<IActionResult> Index()
         {
             var notes = await _noteService.GetAll();
-            ViewBag.Notes = notes.Reverse().OrderBy(x => x.Status).ToList();
-
             var categories = await _categoryService.GetAll();
-            ViewBag.Categories = categories.ToList();
+
+            NoteCategoryViewModel viewModel = new NoteCategoryViewModel()
+            {
+                Notes = notes.Reverse().OrderBy(x => x.Status).ToList(),
+                Categories = categories.ToList()
+            };
             
-            return View();
+            return View(viewModel);
         }
 
         public IActionResult Complete(int id)
@@ -40,35 +43,31 @@ namespace ToDoApp.Controllers
                 note.Status = NoteStatus.Completed;
                 _noteService.Update(note.Id, note);
             }
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
-        public IActionResult Create(string title, string[] categories, DateTime? deadline, string description)
+        public IActionResult Create(Note note, int[] categoryIds)
         {
-            if (string.IsNullOrEmpty(title))
+            if (!ModelState.IsValid)
             {
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
 
-            Note note = new Note(title, deadline, description);
-
-            if (categories.Length > 0)
+            foreach (var categoryId in categoryIds)
             {
-                foreach (string categoryId in categories)
-                {
-                    note.Note_Category.Add(new Note_Category(note.Id, int.Parse(categoryId)));
-                }
+                note.Note_Category.Add(new Note_Category(note.Id, categoryId));
             }
 
-            _noteService.Add(note);
-            return RedirectToAction("Index");
+            _noteService.Add(note);            
+
+            return RedirectToAction(nameof(Index));
         }
 
         public IActionResult Delete(int id)
         {
             _noteService.Delete(id);
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

@@ -9,30 +9,32 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.14.0-beta2/js/bootstrap-select.min.js"></script>
 }
 
+@model NoteCategoryViewModel
+
 <div class="my-5 d-flex gap-2">
     <div class="card flex-grow-1 p-2">
         <h2>Add new Task</h2>
         <form asp-action="Create" method="post">
             <div class="mb-1">
-                <label for="title">Title</label>
-                <input type="text" class="form-control" placeholder="Title" name="title" id="title">
+                <label asp-for="Note.Title">Title</label>
+                <input asp-for="Note.Title">
             </div>
             <div class="mb-1">
-                <label for="categories">Categories</label>
-                <select class="bg-light selectpicker w-100" multiple data-live-search="true" data-selected-text-format="count > 5" name="categories" id="categories">
-                    @foreach (var category in ViewBag.Categories)
+                <label asp-for="Note.Note_Category">Categories</label>
+                <select asp-for="CategoryIds" class="bg-light selectpicker w-100" multiple data-live-search="true" data-selected-text-format="count > 5">
+                    @foreach (var category in Model.Categories)
                     {
                         <option value="@category.Id">@category.Name</option>
                     }
                 </select>
             </div>
             <div class="mb-1">
-                <label for="description">Deadline: </label>
-                <input type="datetime-local" class="form-control" placeholder="Deadline" name="deadline" id="deadline">
+                <label asp-for="Note.Deadline">Deadline: </label>
+                <input asp-for="Note.Deadline">
             </div>
             <div class="mb-1">
-                <label for="description">Description: </label>
-                <textarea class="form-control" placeholder="Description" name="description" id="description"></textarea>
+                <label asp-for="Note.Description">Description: </label>
+                <textarea asp-for="Note.Description" class="form-control"></textarea>
             </div>
             <div class="mb-1">
                 <input class="btn btn-success" type="submit" value="Add Task">
@@ -44,8 +46,8 @@
             <h2>Add new Category</h2>
             <form asp-action="Create" asp-controller="Category" method="post">
                 <div class="mb-1">
-                    <label for="name">Name</label>
-                    <input type="text" class="form-control" placeholder="Name" name="name" id="name">
+                    <label asp-for="Category.Name">Name</label>
+                    <input asp-for="Category.Name">
                 </div>
                 <div class="mb-1">
                     <input class="btn btn-success" type="submit" value="Add Category">
@@ -57,11 +59,11 @@
                 Available Categories
             </button>
             <ul class="dropdown-menu w-100">
-                @foreach (var category in ViewBag.Categories)
+                @foreach (var category in Model.Categories)
                 {
                     <li class="p-1 px-2">
                         @category.Name
-                        <a href=@Url.Action("Delete", "Category", new {id = category.Id})
+                        <a asp-controller="Category" asp-action="Delete" asp-route-id="@category.Id")
                            class="float-end bg-danger text-decoration-none text-white px-2 rounded">&#10005;</a>
                     </li>
                 }
@@ -70,7 +72,7 @@
     </div>
 </div>
 <div class="d-flex flex-wrap gap-1">
-    @foreach (var note in ViewBag.Notes)
+    @foreach (var note in Model.Notes)
     {
         <div class="card w-100">
             <div class="card-body ">
@@ -93,7 +95,7 @@
                     </div>
                     @if (note.Status != NoteStatus.Completed)
                     {
-                        <a href=@Url.Action("Complete", "Note", new {id = note.Id}) class="btn btn-success" style="font-size: 0.75rem">&#10003;</a>
+                        <a asp-action="Complete" asp-route-id="@note.Id" class="btn btn-success" style="font-size: 0.75rem">&#10003;</a>
                     }
                 </div>
                 <div class="d-flex flex-wrap">
@@ -105,9 +107,9 @@
                 <p class="card-text">@note.Description</p>
                 @if (note.Deadline != null)
                 {
-                    <p class="float-start text-muted">Deadline: @note.Deadline.ToString("MM/dd/yy H:mm tt")</p>
+                    <p class="float-start text-muted">Deadline: @note.Deadline.ToString()</p>
                 }
-                <a href=@Url.Action("Delete", "Note", new {id = note.Id}) class="btn btn-danger float-end">Delete</a>
+                <a asp-action="Delete" asp-route-id="@note.Id" class="btn btn-danger float-end">Delete</a>
             </div>
         </div>
     }

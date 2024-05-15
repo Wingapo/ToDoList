@@ -13,15 +13,13 @@ namespace ToDoApp.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(string name)
+        public IActionResult Create(Category category)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                return RedirectToAction("Index", "Note");
-            }
-            Category category = new Category(name);
 
-            _categoryService.Add(category);
+            if(ModelState.IsValid)
+            {
+                _categoryService.Add(category);
+            }
             return RedirectToAction("Index", "Note");
         }
         public IActionResult Delete(int id)
