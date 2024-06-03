@@ -1,17 +1,24 @@
-using Microsoft.EntityFrameworkCore;
 using ToDoApp.Data;
+using ToDoApp.Data.Enums;
 using ToDoApp.Data.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(
-    builder.Configuration.GetConnectionString("DefaultConnection")
-    ));
+builder.Services.AddSession();
+builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddScoped<INoteService, NoteService>();
-builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddSingleton<SqlContext>();
+builder.Services.AddSingleton<XmlContext>();
+
+builder.Services.AddScoped<ServiceFactory>();
+
+builder.Services.AddKeyedScoped<INoteService, NoteServiceSql>(StorageType.Sql);
+builder.Services.AddKeyedScoped<INoteService, NoteServiceXml>(StorageType.Xml);
+
+builder.Services.AddKeyedScoped<ICategoryService, CategoryServiceSql>(StorageType.Sql);
+builder.Services.AddKeyedScoped<ICategoryService, CategoryServiceXml>(StorageType.Xml);
 
 var app = builder.Build();
 
@@ -29,6 +36,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+app.UseSession();
 
 app.MapControllerRoute(
     name: "default",

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Dapper.Contrib.Extensions;
+using System.Xml.Serialization;
 using ToDoApp.Data.Enums;
 
 namespace ToDoApp.Models
@@ -7,12 +8,13 @@ namespace ToDoApp.Models
     {
         [Key]
         public int Id { get; set; }
-
-        [Required]
         public string Title { get; set; }
         public string? Description { get; set; }
         public NoteStatus Status { get; set; }
         public DateTime? Deadline { get; set; }
-        public List<Note_Category> Note_Category { get; set;} = new List<Note_Category>();
+
+        [XmlIgnore]
+        [Computed]
+        public List<Note_Category> Note_Categories { get; set; } = [];
     }
 }

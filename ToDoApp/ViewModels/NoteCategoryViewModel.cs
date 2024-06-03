@@ -1,4 +1,7 @@
-﻿namespace ToDoApp.Models
+﻿using ToDoApp.Data.Enums;
+using ToDoApp.Models;
+
+namespace ToDoApp.ViewModels
 {
     public class NoteCategoryViewModel
     {
@@ -9,5 +12,7 @@
         public Category Category { get; set; }
 
         public int[] CategoryIds { get; set; }
+
+        public StorageType StorageType { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ToDoApp.Data;
 using ToDoApp.Data.Services;
 using ToDoApp.Models;
 
@@ -6,25 +7,25 @@ namespace ToDoApp.Controllers
 {
     public class CategoryController : Controller
     {
-        private readonly ICategoryService _categoryService;
-        public CategoryController(ICategoryService categoryService)
+        private readonly ServiceFactory _serviceFactory;
+
+        public CategoryController(ServiceFactory serviceFactory)
         {
-            _categoryService = categoryService;
+            _serviceFactory = serviceFactory;
         }
 
         [HttpPost]
         public IActionResult Create(Category category)
         {
-
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-                _categoryService.Add(category);
+                _serviceFactory.GetService<ICategoryService>().Add(category);
             }
             return RedirectToAction("Index", "Note");
         }
         public IActionResult Delete(int id)
         {
-            _categoryService.Delete(id);
+            _serviceFactory.GetService<ICategoryService>().Delete(id);
             return RedirectToAction("Index", "Note");
         }
     }

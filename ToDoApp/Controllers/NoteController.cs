@@ -1,47 +1,53 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using ToDoApp.Data;
 using ToDoApp.Data.Enums;
 using ToDoApp.Data.Services;
 using ToDoApp.Models;
+using ToDoApp.ViewModels;
 
 namespace ToDoApp.Controllers
 {
     public class NoteController : Controller
     {
         private readonly ILogger<NoteController> _logger;
-        private readonly INoteService _noteService;
-        private readonly ICategoryService _categoryService;
+        private readonly ServiceFactory _serviceFactory;
 
-        public NoteController(ILogger<NoteController> logger,
-                              INoteService noteService,
-                              ICategoryService categoryService)
+        public NoteController(ILogger<NoteController> logger, ServiceFactory serviceFactory)
         {
             _logger = logger;
-            _noteService = noteService;
-            _categoryService = categoryService;
+            _serviceFactory = serviceFactory;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            var notes = await _noteService.GetAll();
-            var categories = await _categoryService.GetAll();
+            StorageType storageType = StorageType.Sql;
+
+            if (HttpContext.Session.TryGetValue(nameof(StorageType), out _))
+            {
+                storageType = (StorageType)HttpContext.Session.GetInt32(nameof(StorageType))!;
+            }
+
+            var notes = _serviceFactory.GetService<INoteService>().GetAll();
+            var categories = _serviceFactory.GetService<ICategoryService>().GetAll();
 
             NoteCategoryViewModel viewModel = new NoteCategoryViewModel()
             {
-                Notes = notes.Reverse().OrderBy(x => x.Status).ToList(),
-                Categories = categories.ToList()
+                Notes = notes.Reverse().OrderBy(n => n.Status).ToList(),
+                Categories = categories.OrderBy(c => c.Name).ToList(),
+                StorageType = storageType
             };
-            
+
             return View(viewModel);
         }
 
         public IActionResult Complete(int id)
         {
-            Note? note = _noteService.Get(id);
+            Note? note = _serviceFactory.GetService<INoteService>().Get(id);
             if (note != null)
             {
                 note.Status = NoteStatus.Completed;
-                _noteService.Update(note.Id, note);
+                _serviceFactory.GetService<INoteService>().Update(note.Id, note);
             }
             return RedirectToAction(nameof(Index));
         }
@@ -56,17 +62,27 @@ namespace ToDoApp.Controllers
 
             foreach (var categoryId in categoryIds)
             {
-                note.Note_Category.Add(new Note_Category(note.Id, categoryId));
+                Category? category = _serviceFactory.GetService<ICategoryService>().Get(categoryId);
+
+                if (category != null)
+                {
+                    note.Note_Categories.Add(new Note_Category()
+                    {
+                        CategoryId = category.Id,
+                        Category = category
+                    });
+                }
+
             }
 
-            _noteService.Add(note);            
+            _serviceFactory.GetService<INoteService>().Add(note);
 
             return RedirectToAction(nameof(Index));
         }
 
         public IActionResult Delete(int id)
         {
-            _noteService.Delete(id);
+            _serviceFactory.GetService<INoteService>().Delete(id);
             return RedirectToAction(nameof(Index));
         }
 

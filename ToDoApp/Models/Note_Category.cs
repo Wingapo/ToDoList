@@ -1,21 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Dapper.Contrib.Extensions;
 
 namespace ToDoApp.Models
 {
+    [Table("Note_Category")]
     public class Note_Category
     {
-        [Key]
         public int NoteId { get; set; }
-        public Note Note { get; set; }
-
-        [Key]
         public int CategoryId { get; set; }
-        public Category Category { get; set; }
 
-        public Note_Category(int noteId, int categoryId)
-        {
-            NoteId = noteId;
-            CategoryId = categoryId;
-        }
+        [Computed]
+        public Category Category { get; set; }
     }
 }
