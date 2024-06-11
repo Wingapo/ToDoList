@@ -14,7 +14,7 @@
 
 <div class="my-5 d-flex gap-2 flex-wrap">
     <div class="card p-2 w-100">
-        <form asp-action="ChangeStorage" asp-controller="Data" method="post">
+        <form asp-controller="Data" asp-action="ChangeStorage" method="post">
             <span class="align-middle">Change data storage:</span>
             <select class="mt-1 align-middle" asp-for="StorageType">
                 <option value="@((int)StorageType.Sql)">Database</option>
@@ -32,11 +32,9 @@
             </div>
             <div class="mb-1">
                 <label asp-for="CategoryIds">Categories</label>
-                <select asp-for="CategoryIds" class="bg-light selectpicker w-100" multiple data-live-search="true" data-selected-text-format="count > 5">
-                    @foreach (var category in Model.Categories)
-                    {
-                        <option value="@category.Id">@category.Name</option>
-                    }
+                <select asp-for="CategoryIds"
+                    asp-items="@(new SelectList(Model.Categories, nameof(Category.Id), nameof(Category.Name)))"
+                    class="bg-light selectpicker w-100" multiple data-live-search="true" data-selected-text-format="count > 5">
                 </select>
             </div>
             <div class="mb-1">

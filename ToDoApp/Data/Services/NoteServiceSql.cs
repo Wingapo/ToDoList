@@ -14,7 +14,7 @@ namespace ToDoApp.Data.Services
             _connection = context.Connection;
         }
 
-        public void Add(Note note)
+        public int Add(Note note)
         {
             note.Id = (int)_connection.Insert(note);
 
@@ -24,6 +24,7 @@ namespace ToDoApp.Data.Services
             }
 
             _connection.Insert(note.Note_Categories);
+            return note.Id;
         }
 
         public void Delete(int id)

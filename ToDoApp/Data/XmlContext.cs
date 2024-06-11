@@ -71,15 +71,15 @@ namespace ToDoApp.Data
         public T? Deserialize<T>(XmlNode node)
         {
             string data = node.OuterXml;
+            object? obj;
 
             XmlSerializer serializer = new XmlSerializer(typeof(T));
 
             using (TextReader reader = new StringReader(data))
             {
-                object? obj = serializer.Deserialize(reader);
-
-                return (obj is T) ? (T)obj : default;
+                obj = serializer.Deserialize(reader);
             }
+            return (obj is T) ? (T)obj : default;
         }
     }
 }

@@ -21,13 +21,6 @@ namespace ToDoApp.Controllers
 
         public IActionResult Index()
         {
-            StorageType storageType = StorageType.Sql;
-
-            if (HttpContext.Session.TryGetValue(nameof(StorageType), out _))
-            {
-                storageType = (StorageType)HttpContext.Session.GetInt32(nameof(StorageType))!;
-            }
-
             var notes = _serviceFactory.GetService<INoteService>().GetAll();
             var categories = _serviceFactory.GetService<ICategoryService>().GetAll();
 
@@ -35,7 +28,7 @@ namespace ToDoApp.Controllers
             {
                 Notes = notes.Reverse().OrderBy(n => n.Status).ToList(),
                 Categories = categories.OrderBy(c => c.Name).ToList(),
-                StorageType = storageType
+                StorageType = _serviceFactory.GetStorageTypeOrDefault()
             };
 
             return View(viewModel);
@@ -43,11 +36,13 @@ namespace ToDoApp.Controllers
 
         public IActionResult Complete(int id)
         {
-            Note? note = _serviceFactory.GetService<INoteService>().Get(id);
+            INoteService noteService = _serviceFactory.GetService<INoteService>();
+
+            Note? note = noteService.Get(id);
             if (note != null)
             {
                 note.Status = NoteStatus.Completed;
-                _serviceFactory.GetService<INoteService>().Update(note.Id, note);
+                noteService.Update(note.Id, note);
             }
             return RedirectToAction(nameof(Index));
         }
@@ -60,9 +55,11 @@ namespace ToDoApp.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            ICategoryService categoryService = _serviceFactory.GetService<ICategoryService>();
+
             foreach (var categoryId in categoryIds)
             {
-                Category? category = _serviceFactory.GetService<ICategoryService>().Get(categoryId);
+                Category? category = categoryService.Get(categoryId);
 
                 if (category != null)
                 {

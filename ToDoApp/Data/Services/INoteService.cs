@@ -4,7 +4,7 @@ namespace ToDoApp.Data.Services
 {
     public interface INoteService
     {
-        public void Add(Note note);
+        public int Add(Note note);
         public Note? Get(int id);
         public IEnumerable<Note> GetAll();
         public void Update(int id, Note newNote);

@@ -12,9 +12,9 @@ namespace ToDoApp.Data.Services
             _connection = context.Connection;
         }
 
-        public void Add(Category category)
+        public int Add(Category category)
         {
-            _connection.Insert(category);
+            return (int)_connection.Insert(category);
         }
 
         public void Delete(int id)

@@ -14,15 +14,21 @@ namespace ToDoApp.Data.Services
             _noteRoot = _context.Document.SelectSingleNode("data/Notes")!;
         }
 
-        public void Add(Note note)
+        public int Add(Note note)
         {
             XmlNode LastNoteId = _context.Document.SelectSingleNode("data/LastId/Note")!;
 
-            int id = int.Parse(LastNoteId.InnerText);
-            id++;
+            int id = int.Parse(LastNoteId.InnerText) + 1;
 
             note.Id = id;
+            LastNoteId.InnerText = id.ToString();
 
+            _Add(note);
+            return id;
+        }
+
+        private void _Add(Note note)
+        {
             XmlElement noteXml = _context.Serialize(note)!;
             XmlNode node = _noteRoot.OwnerDocument!.ImportNode(noteXml, true);
 
@@ -39,8 +45,6 @@ namespace ToDoApp.Data.Services
             node.AppendChild(categoriesIdXml);
 
             _noteRoot.AppendChild(node);
-            LastNoteId.InnerText = id.ToString();
-
 
             _context.Save();
         }
@@ -118,7 +122,9 @@ namespace ToDoApp.Data.Services
         public void Update(int id, Note newNote)
         {
             Delete(id);
-            Add(newNote);
+
+            newNote.Id = id;
+            _Add(newNote);
         }
     }
 }

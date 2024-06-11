@@ -6,7 +6,7 @@ namespace ToDoApp.Data.Services
     {
         public IEnumerable<Category> GetAll();
         public Category? Get(int id);
-        public void Add(Category category);
+        public int Add(Category category);
         public void Delete(int id);
     }
 }

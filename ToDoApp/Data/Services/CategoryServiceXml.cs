@@ -1,5 +1,4 @@
 ﻿using System.Xml;
-using System.Xml.Xsl;
 using ToDoApp.Models;
 
 namespace ToDoApp.Data.Services
@@ -15,13 +14,11 @@ namespace ToDoApp.Data.Services
             _categoryRoot = _context.Document.SelectSingleNode("data/Categories")!;
         }
 
-        public void Add(Category category)
+        public int Add(Category category)
         {
             XmlNode lastCategoryId = _context.Document.SelectSingleNode("data/LastId/Category")!;
 
-            int id = int.Parse(lastCategoryId.InnerText);
-            id++;
-
+            int id = int.Parse(lastCategoryId.InnerText) + 1;
             category.Id = id;
 
             XmlElement categoryXml = _context.Serialize(category)!;
@@ -31,6 +28,7 @@ namespace ToDoApp.Data.Services
             lastCategoryId.InnerText = id.ToString();
 
             _context.Save();
+            return id;
         }
 
         public void Delete(int id)
