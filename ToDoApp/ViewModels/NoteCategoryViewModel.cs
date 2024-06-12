@@ -11,8 +11,6 @@ namespace ToDoApp.ViewModels
         public Note Note { get; set; }
         public Category Category { get; set; }
 
-        public int[] CategoryIds { get; set; }
-
         public StorageType StorageType { get; set; }
     }
 }

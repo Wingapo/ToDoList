@@ -7,7 +7,7 @@ namespace ToDoApp.Data.Services
         public int Add(Note note);
         public Note? Get(int id);
         public IEnumerable<Note> GetAll();
-        public void Update(int id, Note newNote);
+        public void Update(Note note);
         public void Delete(int id);
     }
 }

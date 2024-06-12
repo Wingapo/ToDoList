@@ -1,6 +1,6 @@
 ﻿namespace ToDoApp.Data.Enums
 {
-    public enum StorageTypeLocation
+    public enum StorageSource
     {
         Session,
         Header

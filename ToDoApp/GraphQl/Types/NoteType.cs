@@ -14,9 +14,7 @@ namespace ToDoApp.GraphQl.Types
             Field(n => n.Description, nullable: true);
             Field(n => n.Status);
             Field(n => n.Deadline, nullable: true);
-            Field(name: "categories",
-                n => n.Note_Categories.Select(nc => nc.Category),
-                type: typeof(ListGraphType<CategoryType>));
+            Field(n => n.Categories, type: typeof(ListGraphType<CategoryType>));
         }
     }
 }

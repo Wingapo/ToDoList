@@ -1,4 +1,4 @@
-﻿using Dapper.Contrib.Extensions;
+﻿using Dapper;
 using Microsoft.Data.SqlClient;
 using ToDoApp.Models;
 
@@ -14,27 +14,34 @@ namespace ToDoApp.Data.Services
 
         public int Add(Category category)
         {
-            return (int)_connection.Insert(category);
+            string query = @"
+                INSERT INTO Categories (Name)
+                OUTPUT inserted.Id
+                VALUES (@Name)";
+
+            return _connection.QuerySingle<int>(query, category);
         }
 
-        public void Delete(int id)
-        {
-            Category? category = Get(id);
-
-            if (category != null)
-            {
-                _connection.Delete(category);
-            }
-        }
+        public void Delete(int id) =>
+            _connection.Execute($"DELETE Categories WHERE Id = {id}");
 
         public Category? Get(int id)
         {
-            return _connection.Get<Category>(id);
+            string query = $@"
+                SELECT Id, Name
+                FROM Categories
+                WHERE Id = {id}";
+
+            return _connection.QueryFirstOrDefault<Category>(query);
         }
 
         public IEnumerable<Category> GetAll()
         {
-            return _connection.GetAll<Category>();
+            string query = @"
+                SELECT Id, Name
+                FROM Categories";
+
+            return _connection.Query<Category>(query);
         }
     }
 }

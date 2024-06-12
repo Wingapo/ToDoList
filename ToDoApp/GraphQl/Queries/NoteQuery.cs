@@ -13,18 +13,18 @@ namespace ToDoApp.GraphQl.Queries
         {
             Name = "noteQ";
 
-            serviceFactory.Location = StorageTypeLocation.Header;
+            StorageSource source = StorageSource.Header;
 
             Field<NoteType>("get")
                 .Argument<IdGraphType>("id")
                 .Resolve(ctx =>
                 {
                     int id = ctx.GetArgument<int>("id");
-                    return serviceFactory.GetService<INoteService>().Get(id);
+                    return serviceFactory.GetService<INoteService>(source).Get(id);
                 });
 
             Field<ListGraphType<NoteType>>("getAll")
-                .Resolve(ctx => serviceFactory.GetService<INoteService>().GetAll());
+                .Resolve(ctx => serviceFactory.GetService<INoteService>(source).GetAll());
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using Dapper.Contrib.Extensions;
 using Microsoft.Data.SqlClient;
 using ToDoApp.Models;
 
@@ -7,6 +6,12 @@ namespace ToDoApp.Data.Services
 {
     public class NoteServiceSql : INoteService
     {
+        private class IdPair(int id1, int id2)
+        {
+            public int Id1 { get; set; } = id1;
+            public int Id2 { get; set; } = id2;
+        }
+
         private readonly SqlConnection _connection;
 
         public NoteServiceSql(SqlContext context)
@@ -16,57 +21,53 @@ namespace ToDoApp.Data.Services
 
         public int Add(Note note)
         {
-            note.Id = (int)_connection.Insert(note);
+            string query = @"
+                INSERT INTO Notes (Title, Description, Status, Deadline)
+                OUTPUT inserted.Id
+                VALUES (@Title, @Description, @Status, @Deadline)";
 
-            foreach (var noteCategory in note.Note_Categories)
-            {
-                noteCategory.NoteId = note.Id;
-            }
+            note.Id = _connection.QuerySingle<int>(query, note);
 
-            _connection.Insert(note.Note_Categories);
+            query = @"
+                INSERT INTO Note_Category (NoteId, CategoryId)
+                VALUES (@Id1, @Id2)";
+
+            IEnumerable<IdPair> NoteCategory = note.CategoryIds.Select(c => new IdPair(note.Id, c));
+
+            _connection.Execute(query, NoteCategory);
+
             return note.Id;
         }
 
-        public void Delete(int id)
-        {
-            Note? note = Get(id);
-
-            if (note != null)
-            {
-                _connection.Delete(note);
-            }
-        }
+        public void Delete(int id) =>
+            _connection.Execute($"DELETE FROM Notes WHERE Id = {id}");
 
         public Note? Get(int id)
         {
-            Note? note = _connection.Get<Note>(id);
+            string query = $@"
+                SELECT n.Id, n.Description, n.Title, n.Status, n.Deadline
+                FROM Notes n
+                WHERE n.Id = {id}";
+
+            Note? note = _connection.QueryFirstOrDefault<Note>(query);
 
             if (note != null)
             {
-                string query = $@"
+                query = $@"
                     SELECT c.Id, c.Name
                     FROM Note_Category nc
                     INNER JOIN Categories c ON nc.CategoryId = c.Id
                     WHERE nc.NoteId = {note.Id}";
 
-                var categories = _connection.Query<Category>(query);
-
-                foreach (var category in categories)
-                {
-                    note.Note_Categories.Add(new Note_Category()
-                    {
-                        NoteId = note.Id,
-                        CategoryId = category.Id,
-                        Category = category
-                    });
-                }
+                note.Categories = _connection.Query<Category>(query).ToList();
+                note.CategoryIds = note.Categories.Select(c => c.Id).ToList();
             }
             return note;
         }
 
         public IEnumerable<Note> GetAll()
         {
-            string query = $@"
+            string query = @"
                 SELECT n.Id, n.Title, n.Description, n.Status, n.Deadline, c.Id, c.Name
                 FROM Notes n
                 LEFT JOIN Note_Category nc ON nc.NoteId = n.Id
@@ -76,22 +77,19 @@ namespace ToDoApp.Data.Services
             {
                 if (c != null)
                 {
-                    n.Note_Categories.Add(new Note_Category()
-                    {
-                        NoteId = n.Id,
-                        CategoryId = c.Id,
-                        Category = c
-                    });
+                    n.Categories.Add(c);
                 }
                 return n;
             });
 
             var result = notes.GroupBy(n => n.Id).Select(g =>
             {
-                var note = g.First();
+                Note note = g.First();
 
-                note.Note_Categories = g.TakeWhile(n => n.Note_Categories.Count > 0)
-                                        .Select(n => n.Note_Categories.First()).ToList();
+                note.Categories = g.TakeWhile(n => n.Categories.Count > 0)
+                                        .Select(n => n.Categories.First()).ToList();
+                
+                note.CategoryIds = note.Categories.Select(c => c.Id).ToList();
 
                 return note;
             });
@@ -99,15 +97,14 @@ namespace ToDoApp.Data.Services
             return result;
         }
 
-        public void Update(int id, Note newNote)
+        public void Update(Note note)
         {
-            Note? note = Get(id);
+            string query = $@"
+                UPDATE Notes
+                SET Title = @Title, Description = @Description, Status = @Status, Deadline = @Deadline
+                WHERE Id = {note.Id}";
 
-            if (note != null)
-            {
-                newNote.Id = note.Id;
-                _connection.Update(newNote);
-            }
+            _connection.Execute(query, note);
         }
     }
 }

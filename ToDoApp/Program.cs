@@ -26,7 +26,6 @@ builder.Services.AddKeyedTransient<INoteService, NoteServiceXml>(StorageType.Xml
 builder.Services.AddKeyedTransient<ICategoryService, CategoryServiceSql>(StorageType.Sql);
 builder.Services.AddKeyedTransient<ICategoryService, CategoryServiceXml>(StorageType.Xml);
 
-
 builder.Services.AddSingleton<CategoryType>();
 builder.Services.AddTransient<CategoryQuery>();
 builder.Services.AddSingleton<CategoryInputType>();
@@ -65,7 +64,7 @@ app.UseAuthorization();
 app.UseSession();
 
 app.UseGraphQL();
-app.UseGraphQLAltair("/graphql",new AltairOptions
+app.UseGraphQLAltair(options: new AltairOptions
 {
     GraphQLEndPoint = "/graphql",
     SubscriptionsEndPoint = "/graphql",

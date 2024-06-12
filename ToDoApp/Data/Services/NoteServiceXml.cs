@@ -33,9 +33,8 @@ namespace ToDoApp.Data.Services
             XmlNode node = _noteRoot.OwnerDocument!.ImportNode(noteXml, true);
 
             XmlNode categoriesIdXml = _context.Document.CreateNode(XmlNodeType.Element, "Categories", null);
-            int[] categoriesId = note.Note_Categories.Select(nc => nc.CategoryId).ToArray();
 
-            foreach (int categoryId in categoriesId)
+            foreach (int categoryId in note.CategoryIds)
             {
                 XmlElement categoryIdXml = _context.Document.CreateElement("Id");
                 categoryIdXml.InnerText = categoryId.ToString();
@@ -97,12 +96,9 @@ namespace ToDoApp.Data.Services
                 }
 
                 categoriesId.Remove(categoryId);
-                note.Note_Categories.Add(new Note_Category()
-                {
-                    NoteId = note.Id,
-                    CategoryId = categoryId,
-                    Category = _context.Deserialize<Category>(categoryXml)!
-                });
+
+                note.Categories.Add(_context.Deserialize<Category>(categoryXml)!);
+                note.CategoryIds.Add(categoryId);
             }
             return note;
         }
@@ -119,12 +115,10 @@ namespace ToDoApp.Data.Services
             return notes;
         }
 
-        public void Update(int id, Note newNote)
+        public void Update(Note note)
         {
-            Delete(id);
-
-            newNote.Id = id;
-            _Add(newNote);
+            Delete(note.Id);
+            _Add(note);
         }
     }
 }

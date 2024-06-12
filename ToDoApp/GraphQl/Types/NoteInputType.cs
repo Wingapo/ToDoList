@@ -12,6 +12,7 @@ namespace ToDoApp.GraphQl.Types
             Field(n => n.Title);
             Field(n => n.Description, nullable: true);
             Field(n => n.Deadline, nullable: true);
+            Field(n => n.CategoryIds, nullable: true);
         }
     }
 }

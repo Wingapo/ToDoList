@@ -1,4 +1,4 @@
-﻿using Dapper.Contrib.Extensions;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Xml.Serialization;
 using ToDoApp.Data.Enums;
 
@@ -14,7 +14,8 @@ namespace ToDoApp.Models
         public DateTime? Deadline { get; set; }
 
         [XmlIgnore]
-        [Computed]
-        public List<Note_Category> Note_Categories { get; set; } = [];
+        public List<int> CategoryIds { get; set; } = [];
+        [XmlIgnore]
+        public List<Category> Categories { get; set; } = [];
     }
 }

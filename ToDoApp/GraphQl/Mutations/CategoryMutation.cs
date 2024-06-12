@@ -14,7 +14,7 @@ namespace ToDoApp.GraphQl.Mutations
         {
             Name = "categoryM";
 
-            serviceFactory.Location = StorageTypeLocation.Header;
+            StorageSource source = StorageSource.Header;
 
             Field<CategoryType>("add")
                 .Argument<NonNullGraphType<CategoryInputType>>("category")
@@ -22,7 +22,7 @@ namespace ToDoApp.GraphQl.Mutations
                 {
                     Category category = ctx.GetArgument<Category>("category");
 
-                    category.Id = serviceFactory.GetService<ICategoryService>().Add(category);
+                    category.Id = serviceFactory.GetService<ICategoryService>(source).Add(category);
 
                     return category;
                 });
@@ -31,7 +31,7 @@ namespace ToDoApp.GraphQl.Mutations
                 .Argument<NonNullGraphType<IdGraphType>>("id")
                 .Resolve(ctx =>
                 {
-                    ICategoryService service = serviceFactory.GetService<ICategoryService>();
+                    ICategoryService service = serviceFactory.GetService<ICategoryService>(source);
 
                     Category? category = service.Get(ctx.GetArgument<int>("id"));
                     if (category != null)

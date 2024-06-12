@@ -31,8 +31,8 @@
                 <input asp-for="Note.Title">
             </div>
             <div class="mb-1">
-                <label asp-for="CategoryIds">Categories</label>
-                <select asp-for="CategoryIds"
+                <label asp-for="Note.CategoryIds">Categories</label>
+                <select asp-for="Note.CategoryIds"
                     asp-items="@(new SelectList(Model.Categories, nameof(Category.Id), nameof(Category.Name)))"
                     class="bg-light selectpicker w-100" multiple data-live-search="true" data-selected-text-format="count > 5">
                 </select>
@@ -108,9 +108,9 @@
                     }
                 </div>
                 <div class="d-flex flex-wrap">
-                    @foreach (var category in note.Note_Categories)
+                    @foreach (var category in note.Categories)
                     {
-                        <a class="bg-light rounded-pill py-1 px-2 m-1 border text-decoration-none text-muted">@category.Category.Name</a>
+                        <a class="bg-light rounded-pill py-1 px-2 m-1 border text-decoration-none text-muted">@category.Name</a>
                     }
                 </div>
                 <p class="card-text">@note.Description</p>

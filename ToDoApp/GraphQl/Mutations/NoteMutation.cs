@@ -14,33 +14,27 @@ namespace ToDoApp.GraphQl.Mutations
         {
             Name = "noteM";
 
-            serviceFactory.Location = StorageTypeLocation.Header;
+            StorageSource source = StorageSource.Header;
 
             Field<NoteType>("add")
                 .Argument<NonNullGraphType<NoteInputType>>("note")
-                .Argument<ListGraphType<NonNullGraphType<IdGraphType>>>("categoryIds")
                 .Resolve((ctx) =>
                 {
                     Note note = ctx.GetArgument<Note>("note");
-                    IEnumerable<int> categoryIds = ctx.GetArgument<IEnumerable<int>>("categoryIds") ?? new List<int>();
 
-                    ICategoryService categoryService = serviceFactory.GetService<ICategoryService>();
+                    ICategoryService categoryService = serviceFactory.GetService<ICategoryService>(source);
 
-                    foreach (var categoryId in categoryIds)
+                    foreach (int categoryId in note.CategoryIds)
                     {
                         Category? category = categoryService.Get(categoryId);
 
                         if (category != null)
                         {
-                            note.Note_Categories.Add(new Note_Category()
-                            {
-                                CategoryId = category.Id,
-                                Category = category
-                            });
+                            note.Categories.Add(category);
                         }
 
                     }
-                    note.Id = serviceFactory.GetService<INoteService>().Add(note);
+                    note.Id = serviceFactory.GetService<INoteService>(source).Add(note);
 
                     return note;
                 });
@@ -49,14 +43,14 @@ namespace ToDoApp.GraphQl.Mutations
                 .Argument<NonNullGraphType<IdGraphType>>("id")
                 .Resolve(ctx =>
                 {
-                    INoteService service = serviceFactory.GetService<INoteService>();
+                    INoteService service = serviceFactory.GetService<INoteService>(source);
 
                     Note? note = service.Get(ctx.GetArgument<int>("id"));
 
                     if (note != null)
                     {
                         note.Status = NoteStatus.Completed;
-                        service.Update(note.Id, note);
+                        service.Update(note);
                     }
                     return note;
                 });
@@ -65,7 +59,7 @@ namespace ToDoApp.GraphQl.Mutations
                 .Argument<NonNullGraphType<IdGraphType>>("id")
                 .Resolve(ctx =>
                 {
-                    INoteService service = serviceFactory.GetService<INoteService>();
+                    INoteService service = serviceFactory.GetService<INoteService>(source);
 
                     Note? note = service.Get(ctx.GetArgument<int>("id"));
                     if (note != null)

@@ -7,31 +7,27 @@ namespace ToDoApp.Data
         private readonly IServiceProvider _serviceProvider;
         private readonly IHttpContextAccessor _contextAccessor;
 
-        public StorageTypeLocation Location { get; set; }
-
         public ServiceFactory(IServiceProvider serviceProvider, IHttpContextAccessor contextAccessor)
         {
             _serviceProvider = serviceProvider;
             _contextAccessor = contextAccessor;
-
-            Location = StorageTypeLocation.Session;
         }
 
-        public T GetService<T>() =>
-            _serviceProvider.GetKeyedService<T>(GetStorageTypeOrDefault()) ?? throw new KeyNotFoundException();
+        public T GetService<T>(StorageSource source) =>
+            _serviceProvider.GetKeyedService<T>(GetStorageTypeOrDefault(source)) ?? throw new KeyNotFoundException();
 
-        public StorageType GetStorageTypeOrDefault()
+        public StorageType GetStorageTypeOrDefault(StorageSource source)
         {
             StorageType storage = StorageType.Sql;
 
             if (_contextAccessor.HttpContext != null)
             {
-                storage = (Location) switch
+                storage = (source) switch
                 {
-                    StorageTypeLocation.Session
+                    StorageSource.Session
                         => (StorageType?)_contextAccessor.HttpContext.Session.GetInt32(nameof(StorageType)) ?? storage,
                     
-                    StorageTypeLocation.Header
+                    StorageSource.Header
                         => int.TryParse(_contextAccessor.HttpContext.Request.Headers["Storage"], out int type)
                             ? (StorageType?)type ?? storage
                             : storage,
