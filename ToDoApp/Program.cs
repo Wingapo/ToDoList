@@ -42,6 +42,7 @@ builder.Services.AddSingleton<RootSchema>();
 
 builder.Services.AddGraphQL(graphBuilder => graphBuilder
     .AddSchema<RootSchema>()
+    .AddErrorInfoProvider(opt => opt.ExposeExceptionDetails = true)
     .AddSystemTextJson());
 
 
